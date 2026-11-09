@@ -20,22 +20,24 @@ def get_vietnam_time():
     tz_vn = timezone(timedelta(hours=7))
     return datetime.now(tz_vn).strftime("%d/%m/%Y %H:%M:%S")
 
-def grade_theory(week_folder, week_name):
+def grade_theory(week_folder, week_name, all_secret_keys=None):
     """Chấm điểm bài tập lý thuyết dựa vào file quiz.json và key bí mật"""
     answer_file = os.path.join(week_folder, "quiz.json")
     if not os.path.exists(answer_file):
         answer_file = os.path.join(week_folder, "tra-loi.json")
 
     # Ưu tiên lấy đáp án từ GitHub Secret ANSWER_KEYS
-    secret_keys_str = os.environ.get("ANSWER_KEYS")
     correct_keys = None
-
-    if secret_keys_str:
-        try:
-            all_secret_keys = json.loads(secret_keys_str)
-            correct_keys = all_secret_keys.get(week_name)
-        except Exception as e:
-            print(f"[WARN] Lỗi giải mã ANSWER_KEYS secret: {e}")
+    if all_secret_keys:
+        correct_keys = all_secret_keys.get(week_name)
+    else:
+        secret_keys_str = os.environ.get("ANSWER_KEYS")
+        if secret_keys_str:
+            try:
+                keys_json = json.loads(secret_keys_str)
+                correct_keys = keys_json.get(week_name)
+            except Exception as e:
+                print(f"[WARN] Lỗi giải mã ANSWER_KEYS secret: {e}")
 
     # Fallback nếu không có secret
     if not correct_keys:
@@ -97,7 +99,12 @@ def grade_practice(week_name, hidden_tests_dir=None):
         return None, "Không có file test"
 
     cmd = ["node", "--test"] + test_files
-    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    # Môi trường an toàn: loại bỏ các biến môi trường nhạy cảm trước khi chạy code học sinh
+    safe_env = {
+        k: v for k, v in os.environ.items()
+        if not any(s in k.upper() for s in ["KEY", "SECRET", "TOKEN", "GCP", "AUTH", "PASS"])
+    }
+    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=safe_env)
 
     if res.returncode == 0:
         return 100, "Đạt 100% (Pass toàn bộ hidden tests)"
@@ -115,6 +122,15 @@ def main():
     except Exception as e:
         print(f"[ERROR] Invalid JSON in GCP_SA_KEY: {e}", file=sys.stderr)
         sys.exit(1)
+
+    # Đọc đáp án lý thuyết từ secret (nếu có)
+    answer_keys_str = os.environ.get("ANSWER_KEYS")
+    answer_keys_data = None
+    if answer_keys_str:
+        try:
+            answer_keys_data = json.loads(answer_keys_str)
+        except Exception as e:
+            print(f"[WARN] Lỗi giải mã ANSWER_KEYS secret: {e}")
 
     student_username = os.environ.get("STUDENT_USERNAME", "unknown_user").strip()
     commit_url = os.environ.get("COMMIT_URL", "")
@@ -137,6 +153,10 @@ def main():
         except Exception as e:
             print(f"[WARN] Không thể giải nén HIDDEN_TESTS_B64: {e}")
             hidden_temp_dir = None
+
+    # Xóa các biến môi trường chứa secrets nhạy cảm trước khi chấm bài
+    for secret_var in ["GCP_SA_KEY", "ANSWER_KEYS", "HIDDEN_TESTS_B64"]:
+        os.environ.pop(secret_var, None)
 
     try:
         import gspread
@@ -161,7 +181,7 @@ def main():
         except ValueError:
             continue
 
-        score_lt, detail_lt = grade_theory(wf, week_name)
+        score_lt, detail_lt = grade_theory(wf, week_name, answer_keys_data)
         score_th, detail_th = grade_practice(week_name, hidden_temp_dir)
 
         results[week_num] = {

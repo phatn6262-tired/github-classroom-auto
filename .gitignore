@@ -1,2 +1,5 @@
 grading_summary.md
 .hidden_tests/
+__pycache__/
+*.pyc
+
