@@ -27,6 +27,25 @@
  */
 function createCounter(initialValue = 0, step = 1) {
   // TODO: Cài đặt hàm tại đây
+  let count = initialValue;
+
+  return {
+    increment: () => {
+      count += step;
+      return count;
+    },
+    decrement: () => {
+      count -= step;
+      return count;
+    },
+    getValue: () => {
+      return count;
+    },
+    reset: () => {
+      count = initialValue;
+      return count;
+    },
+  };
   throw new Error("Chưa cài đặt hàm createCounter");
 }
 
@@ -42,6 +61,11 @@ function createCounter(initialValue = 0, step = 1) {
  */
 function createBatchHandlers(count, prefix = 'task') {
   // TODO: Cài đặt hàm tại đây
+  const handler = [];
+  for (let i = 0; i < count; i++){
+    handler.push(() => `${prefix}-${i}`);
+  }
+  return handler;
   throw new Error("Chưa cài đặt hàm createBatchHandlers");
 }
 
@@ -62,6 +86,12 @@ function createBatchHandlers(count, prefix = 'task') {
  */
 function formatLogMessage(level, message, metadata = {}) {
   // TODO: Cài đặt hàm tại đây
+  const LEVEL = level.toUpperCase();
+
+  if(Object.keys(metadata).length > 0){
+    return `[${LEVEL}] ${message} | metadata: ${JSON.stringify(metadata)}`;
+  }
+  return `[${LEVEL}] ${message}`;
   throw new Error("Chưa cài đặt hàm formatLogMessage");
 }
 
