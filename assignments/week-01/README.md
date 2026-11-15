@@ -280,81 +280,87 @@ calculate();
 
 ---
 
-## 💻 PHẦN 2: BÀI TẬP THỰC HÀNH NÂNG CAO (100% KIẾN THỨC TUẦN 01)
+## 💻 PHẦN 2: BÀI TẬP THỰC HÀNH CỐT LÕI (ỨNG DỤNG BACKEND ES6+)
 
-Mở file **`index.js`** trong thư mục này và hoàn thành 3 bài toán chuyên sâu khảo sát trực tiếp 5 chủ đề cốt lõi của Tuần 1 (`let/const/var`, `Scope`, `Hoisting/TDZ`, `Arrow Functions`, `Template Literals`):
-
----
-
-### 🔥 Bài 1: Arrow Functions, Lexical `this` & Bẫy Scope Vòng Lặp
-Bao gồm 2 hàm khảo sát sự khác biệt giữa Regular Function và Arrow Function cùng bẫy closure kinh điển trong vòng lặp:
-1. `createExecutionContext(ownerName)`:
-   - Trả về đối tượng context có phương thức `createHandler(actionName)`.
-   - `createHandler` PHẢI trả về một **Arrow Function**.
-   - Khi thực thi, handler trả về template literal: `[${actionName}] performed by ${this.ownerName}`.
-   - **Bản chất kiểm tra**:
-     - Do tính chất **Lexical `this`**, dù hàm handler có bị gán sang biến rời rạc và gọi không kèm object (`const fn = ctx.createHandler('run'); fn()`), nó vẫn giữ nguyên tham chiếu đến `this.ownerName` của context ban đầu.
-     - Arrow function không có `[[Construct]]` và không có thuộc tính `prototype`: Nếu người dùng gọi `new handler()`, JavaScript runtime phải ném ra lỗi `TypeError`.
-2. `createBatchHandlers(count, prefix)`:
-   - Nhận vào số lượng `count` và chuỗi `prefix`.
-   - Trả về mảng gồm `count` hàm độc lập. Hàm thứ `i` (từ `0` đến `count - 1`) khi được gọi trả về chuỗi template literal: `${prefix}-${i}`.
-   - **Bẫy kiểm tra**: Bạn PHẢI áp dụng đúng cơ chế **Block Scope (`let`)** trong vòng lặp. Nếu dùng `var`, biến `i` sẽ bị hoisting lên function scope khiến mọi handler khi gọi đều trả về giá trị cuối cùng `${prefix}-${count}`!
+Mở file **`index.js`** trong thư mục này và hoàn thành 3 bài toán thiết thực, bám sát các tính năng ES6+ cốt lõi được sử dụng hàng ngày trong Backend Node.js (`let/const`, Scope, Closure, Arrow Functions, Template Literals, `Object.freeze`):
 
 ---
 
-### 🔥 Bài 2: Template Literals & Tagged Templates Chuyên Sâu
-Xây dựng 2 Tagged Template functions vận dụng tối đa sức mạnh của ES6 Template Strings:
-1. `highlight(strings, ...values)`:
-   - Một Tagged Template function tự động định dạng và bọc các biểu thức nội suy `${...}`:
-     - Nếu `value` là `undefined` hoặc `null`: chuyển đổi thành chuỗi rỗng `""`.
-     - Nếu `value` là số (`number`), logic (`boolean`) hoặc chuỗi (`string`): bọc giá trị trong cặp thẻ `<mark>${value}</mark>`.
-     - Ghép xen kẽ các chuỗi tĩnh `strings[i]` và giá trị nội suy đã được định dạng.
+### 🔥 Bài 1: Quản Lý State Bằng Closure & Bẫy Vòng Lặp Scope
+1. `createCounter(initialValue = 0, step = 1)`:
+   - Xây dựng một hàm khởi tạo bộ đếm an toàn vận dụng cơ chế **Closure** và **Default Parameters**.
+   - Trả về đối tượng chứa 4 hàm Arrow Function:
+     - `increment()`: Tăng giá trị hiện tại thêm `step` đơn vị, trả về giá trị mới.
+     - `decrement()`: Giảm giá trị hiện tại đi `step` đơn vị, trả về giá trị mới.
+     - `getValue()`: Trả về giá trị hiện tại của bộ đếm.
+     - `reset()`: Đặt lại giá trị về `initialValue` ban đầu và trả về giá trị ban đầu đó.
+   - **Bản chất kiểm tra**: Giá trị của bộ đếm phải được bảo vệ hoàn toàn bên trong lexical scope (private state), bên ngoài không thể truy cập trực tiếp kiểu `counter.value`. Mỗi lần gọi `createCounter()` phải tạo ra một instance độc lập.
+
+2. `createBatchHandlers(count, prefix = 'task')`:
+   - Nhận vào số lượng `count` và chuỗi tiền tố `prefix`.
+   - Trả về một mảng gồm `count` hàm độc lập. Hàm thứ `i` (từ `0` đến `count - 1`) khi được gọi trả về chuỗi template literal: `${prefix}-${i}`.
+   - Nếu `count <= 0`, trả về mảng rỗng `[]`.
+   - **Bẫy kiểm tra**: Bạn PHẢI áp dụng đúng cơ chế **Block Scope (`let`)** trong vòng lặp `for`. Nếu dùng `var`, biến `i` sẽ bị hoisting khiến mọi handler đều trả về giá trị cuối cùng!
+
+---
+
+### 🔥 Bài 2: Template Literals & Chuẩn Hóa Chuỗi Trong Backend
+1. `formatLogMessage(level, message, metadata = {})`:
+   - Dùng Template Literal để format log thông điệp chuẩn hóa cho Backend server.
+   - Tham số:
+     - `level` (string): Mức độ log (ví dụ `'info'`, `'warn'`, `'error'`). Cần chuyển đổi thành chữ in hoa (`UPPERCASE`).
+     - `message` (string): Nội dung thông điệp log.
+     - `metadata` (object, mặc định `{}`): Dữ liệu ngữ cảnh đi kèm.
+   - Quy tắc định dạng:
+     - Nếu `metadata` có chứa dữ liệu (số lượng key > 0): Trả về chuỗi:
+       `[${level.toUpperCase()}] ${message} | metadata: ${JSON.stringify(metadata)}`
+     - Nếu `metadata` rỗng (hoặc không truyền): Trả về chuỗi:
+       `[${level.toUpperCase()}] ${message}`
    - *Ví dụ:*
      ```javascript
-     highlight`User: ${"Alice"}, Score: ${100}, Note: ${null}`
-     // => "User: <mark>Alice</mark>, Score: <mark>100</mark>, Note: "
+     formatLogMessage('info', 'Server started')
+     // => "[INFO] Server started"
+
+     formatLogMessage('error', 'Auth failed', { userId: 101 })
+     // => "[ERROR] Auth failed | metadata: {\"userId\":101}"
      ```
-2. `multilineFormat(strings, ...values)`:
-   - Xử lý các template literals nhiều dòng (multiline templates) thường gặp khi viết SQL query, HTML template, markdown trong Node.js:
-     - Bước 1: Ghép các chuỗi tĩnh và giá trị nội suy thành chuỗi đầy đủ.
-     - Bước 2: Tách chuỗi theo từng dòng (`\n`).
-     - Bước 3: Bỏ qua các dòng trống hoàn toàn (hoặc dòng chỉ toàn khoảng trắng) ở đầu và ở cuối chuỗi.
-     - Bước 4: Trim khoảng trắng thừa ở cả hai đầu của mỗi dòng còn lại.
-     - Bước 5: Nối lại thành một chuỗi duy nhất bằng ký tự xuống dòng `\n`.
+
+2. `cleanQueryString(sql)`:
+   - Trong Backend, các lập trình viên thường viết câu lệnh SQL hoặc GraphQL nhiều dòng dạng template string có chứa thụt lề và xuống dòng.
+   - Hàm `cleanQueryString(sql)` nhận vào một chuỗi `sql` nhiều dòng:
+     - Bỏ qua các dòng trống hoàn toàn ở đầu và cuối.
+     - Trim khoảng trắng thừa ở mỗi dòng.
+     - Loại bỏ các dòng rỗng ở giữa.
+     - Nối tất cả các dòng còn lại thành một chuỗi duy nhất trên **1 dòng**, ngăn cách nhau bởi **1 dấu cách** `" "`.
+   - *Ví dụ:*
+     ```javascript
+     const query = `
+       SELECT id, name
+       FROM users
+       WHERE status = 'ACTIVE'
+     `;
+     cleanQueryString(query);
+     // => "SELECT id, name FROM users WHERE status = 'ACTIVE'"
+     ```
 
 ---
 
-### 🔥 Bài 3: Bộ Mô Phỏng Scope Chain, Hoisting, TDZ & `const` Immutability
-Xây dựng hàm `createScopeRegistry(parentScope = null)` mô phỏng chính xác thuật toán quản lý biến và phạm vi của JavaScript Engine trong ES6:
-- **`declare(name, kind)`**:
-  - `kind` phải là `"var"`, `"let"`, hoặc `"const"` (nếu không ném `TypeError("Invalid declaration kind")`).
-  - **No Re-declaration Trap**: Nếu biến `name` đã tồn tại trong cùng một scope và ít nhất một trong hai lần khai báo dùng `let` hoặc `const` $\to$ Ném ngay `TypeError("Identifier '<name>' has already been declared")`. (Chỉ cho phép khai báo lại nếu cả hai đều là `var`).
-  - **Hoisting & TDZ**:
-    - `var`: Được hoisted ngay với giá trị khởi tạo ban đầu là `undefined`.
-    - `let`/`const`: Nằm trong vùng chết tạm thời (TDZ - Temporal Dead Zone / `UNINITIALIZED`).
-- **`initialize(name, value)`**:
-  - Đưa biến thoát khỏi TDZ và gán giá trị đầu tiên.
-  - Nếu biến chưa từng được `declare` trong scope hiện tại $\to$ Ném `ReferenceError("'<name>' is not declared")`.
-  - Nếu biến đã được khởi tạo trước đó rồi $\to$ Ném `Error("Variable already initialized")`.
-  - Nếu là `"const"`: Gán giá trị; nếu `value` là object hoặc array thì đóng băng nông bằng `Object.freeze(value)`.
-- **`assign(name, value)`**:
-  - Gán lại giá trị cho biến theo **Scope Chain** (tìm từ scope hiện tại lên `parentScope`).
-  - Nếu không tìm thấy ở bất cứ scope nào $\to$ Ném `ReferenceError("'<name>' is not defined")`.
-  - Nếu tìm thấy biến nhưng biến đang trong TDZ $\to$ Ném `ReferenceError("Cannot access '<name>' before initialization")`.
-  - Nếu biến có kiểu `"const"` $\to$ Ném `TypeError("Assignment to constant variable")`.
-  - Nếu là `let` hoặc `var` $\to$ Cập nhật giá trị mới trên đúng scope tìm thấy.
-- **`get(name)`**:
-  - Đọc giá trị biến theo **Scope Chain** (tìm từ scope hiện tại lên `parentScope`).
-  - Nếu không tìm thấy $\to$ Ném `ReferenceError("'<name>' is not defined")`.
-  - Nếu tìm thấy biến nhưng đang trong TDZ $\to$ Ném `ReferenceError("Cannot access '<name>' before initialization")`.
-  - Trả về giá trị của biến.
-- **`createChildScope()`**:
-  - Tạo một scope con mới có `parentScope` trỏ về scope hiện tại.
-  - Hỗ trợ **Variable Shadowing**: Child scope có thể `declare` biến trùng tên với cha mà không bị báo lỗi trùng lặp; `get`/`assign` ở child scope sẽ ưu tiên biến ở child scope.
+### 🔥 Bài 3: Module Cấu Hình Backend An Toàn (`createConfigManager`)
+Trong kiến trúc Backend, file cấu hình (Config/Environment) cần được quản lý tập trung và bảo vệ tính bất biến để tránh bị các module khác vô tình ghi đè.
+
+Xây dựng hàm `createConfigManager(initialConfig = {})`:
+- Nhận vào `initialConfig` (object cấu hình ban đầu).
+- Trả về đối tượng quản lý cấu hình có các phương thức:
+  - `get(key, defaultValue = null)`: Đọc giá trị của `key`. Nếu `key` không tồn tại hoặc có giá trị `undefined`, trả về `defaultValue`.
+  - `set(key, value)`: Gán hoặc cập nhật giá trị của `key` trong cấu hình.
+  - `has(key)`: Kiểm tra `key` có tồn tại trong cấu hình hay không (trả về `true` hoặc `false`).
+  - `exportConfig()`: Xuất bản sao toàn bộ cấu hình hiện tại dưới dạng một đối tượng đã được đóng băng bằng `Object.freeze(...)`. Đối tượng được trả về không thể bị sửa, xóa hoặc thêm thuộc tính từ bên ngoài (ném lỗi trong strict mode).
 
 ---
 
-👉 **Kiểm tra cú pháp tại máy trước khi nộp**:
+👉 **Kiểm tra bài làm tại máy trước khi nộp**:
 ```bash
 npm run w1
+# Hoặc:
+node --test assignments/week-01/sample.test.js
 ```

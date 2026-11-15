@@ -1,134 +1,108 @@
 /**
  * ==============================================================================
  * BÀI TẬP THỰC HÀNH TUẦN 01: JAVASCRIPT ES6+ NỀN TẢNG
- * Chủ đề: let/const/var, Scope, Hoisting, Arrow Functions, Template Literals
+ * Chủ đề: let/const/var, Scope, Closure, Arrow Functions, Template Literals
  * ==============================================================================
  * 
  * HƯỚNG DẪN:
  * 1. Đọc kỹ yêu cầu đề bài trong assignments/week-01/README.md.
  * 2. Cài đặt các hàm bên dưới theo đúng đặc tả kỹ thuật.
- * 3. Chạy lệnh: `npm test` hoặc `npm run w1` để kiểm tra với bộ test mẫu.
+ * 3. Chạy lệnh: `node --test assignments/week-01/sample.test.js` để kiểm tra.
  */
 
 // ==============================================================================
-// BÀI 1: ARROW FUNCTIONS, LEXICAL THIS & BẪY SCOPE VÒNG LẶP
+// BÀI 1: QUẢN LÝ STATE BẰNG CLOSURE & BẪY VÒNG LẶP SCOPE
 // ==============================================================================
 
 /**
- * Tạo một Execution Context đại diện cho một đối tượng thực thi.
+ * Khởi tạo bộ đếm an toàn với private state qua Closure và Default Parameters.
  * 
- * @param {string} ownerName - Tên của chủ sở hữu context
- * @returns {object} Đối tượng context chứa các phương thức:
- *   - createHandler(actionName): Trả về một Arrow Function. Khi gọi hàm này,
- *     nó phải trả về chuỗi template literal: `[${actionName}] performed by ${this.ownerName}`.
- *     Đặc biệt: Vì là Arrow Function, dù hàm này có bị tách khỏi object hay gán sang biến
- *     độc lập, lexical this vẫn luôn tham chiếu đúng đến context được tạo ra.
- *     Hàm handler này không thể dùng làm constructor với `new` (nếu dùng `new` sẽ ném TypeError).
+ * @param {number} [initialValue=0] - Giá trị khởi tạo ban đầu (mặc định 0)
+ * @param {number} [step=1] - Bước tăng/giảm mỗi lần gọi (mặc định 1)
+ * @returns {object} Đối tượng chứa các phương thức (Arrow Functions):
+ *   - increment(): Tăng giá trị thêm `step`, trả về giá trị mới.
+ *   - decrement(): Giảm giá trị đi `step`, trả về giá trị mới.
+ *   - getValue(): Trả về giá trị hiện tại của bộ đếm.
+ *   - reset(): Đặt lại giá trị về `initialValue` ban đầu và trả về giá trị đó.
  */
-function createExecutionContext(ownerName) {
-  // TODO: Viết code tại đây
-  throw new Error("Chưa cài đặt hàm createExecutionContext");
+function createCounter(initialValue = 0, step = 1) {
+  // TODO: Cài đặt hàm tại đây
+  throw new Error("Chưa cài đặt hàm createCounter");
 }
 
 /**
- * Tạo một mảng gồm `count` hàm xử lý (handlers), giải quyết triệt để bẫy scope vòng lặp.
+ * Tạo một mảng gồm `count` hàm xử lý, giải quyết bẫy scope vòng lặp.
  * 
- * @param {number} count - Số lượng handler cần tạo (>= 0)
- * @param {string} prefix - Chuỗi tiền tố
- * @returns {Function[]} Mảng gồm `count` hàm. Hàm thứ `i` (từ 0 đến count - 1)
- *   khi được gọi độc lập không truyền tham số PHẢI trả về chuỗi template literal:
- *   `${prefix}-${i}`.
- *   LƯU Ý: Phải sử dụng đúng cơ chế block scope (`let`) hoặc closure để đảm bảo
- *   mỗi hàm ghi nhớ đúng giá trị `i` của vòng lặp tương ứng, không bị bẫy ghi đè biến.
+ * @param {number} count - Số lượng handler cần tạo
+ * @param {string} [prefix='task'] - Tiền tố của chuỗi trả về (mặc định 'task')
+ * @returns {Function[]} Mảng gồm `count` hàm. Hàm thứ `i` (0 đến count - 1)
+ *   khi được gọi không truyền tham số trả về chuỗi: `${prefix}-${i}`.
+ *   Nếu count <= 0, trả về mảng rỗng [].
+ *   LƯU Ý: Phải sử dụng đúng cơ chế block scope (`let`) trong vòng lặp.
  */
-function createBatchHandlers(count, prefix) {
-  // TODO: Viết code tại đây
+function createBatchHandlers(count, prefix = 'task') {
+  // TODO: Cài đặt hàm tại đây
   throw new Error("Chưa cài đặt hàm createBatchHandlers");
 }
 
 // ==============================================================================
-// BÀI 2: TEMPLATE LITERALS & TAGGED TEMPLATES CHUYÊN SÂU
+// BÀI 2: TEMPLATE LITERALS & CHUẨN HÓA CHUỖI TRONG BACKEND
 // ==============================================================================
 
 /**
- * Tagged template function dùng để highlight và định dạng an toàn các giá trị nội suy.
+ * Format thông điệp log chuẩn hóa cho server Backend bằng Template Literal.
  * 
- * @param {TemplateStringsArray} strings - Mảng các chuỗi tĩnh
- * @param {...any} values - Các giá trị nội suy ${...}
- * @returns {string} Chuỗi hoàn chỉnh sau khi ghép các chuỗi tĩnh và giá trị đã xử lý:
- *   - Nếu value là `undefined` hoặc `null`: thay thế bằng chuỗi rỗng `""`.
- *   - Nếu value là số, boolean, chuỗi: bọc giá trị đó trong cặp thẻ `<mark>${value}</mark>`.
- *   - Ghép xen kẽ strings[i] với value[i] theo đúng cơ chế của Tagged Template.
+ * @param {string} level - Mức độ log ('info', 'warn', 'error', ...)
+ * @param {string} message - Nội dung log
+ * @param {object} [metadata={}] - Dữ liệu ngữ cảnh đi kèm (mặc định {})
+ * @returns {string} Chuỗi log đã chuẩn hóa:
+ *   - level luôn được chuyển thành chữ in hoa [LEVEL].
+ *   - Nếu metadata có ít nhất 1 key: `[${LEVEL}] ${message} | metadata: ${JSON.stringify(metadata)}`
+ *   - Nếu metadata rỗng hoặc không truyền: `[${LEVEL}] ${message}`
  */
-function highlight(strings, ...values) {
-  // TODO: Viết code tại đây
-  throw new Error("Chưa cài đặt hàm highlight");
+function formatLogMessage(level, message, metadata = {}) {
+  // TODO: Cài đặt hàm tại đây
+  throw new Error("Chưa cài đặt hàm formatLogMessage");
 }
 
 /**
- * Tagged template function xử lý template literal nhiều dòng (multiline string).
+ * Chuẩn hóa chuỗi truy vấn SQL multiline thành 1 dòng duy nhất.
  * 
- * @param {TemplateStringsArray} strings - Mảng các chuỗi tĩnh
- * @param {...any} values - Các giá trị nội suy
- * @returns {string} Chuỗi sau khi ghép nối và chuẩn hóa theo quy tắc:
- *   1. Ghép chuỗi tĩnh và giá trị nội suy như template string thông thường.
- *   2. Tách chuỗi thành từng dòng (dựa trên ký tự xuống dòng `\n`).
- *   3. Bỏ qua các dòng trống ở đầu và ở cuối (dòng chỉ chứa khoảng trắng).
- *   4. Xóa khoảng trắng thừa (trim) ở đầu và cuối của mỗi dòng còn lại.
- *   5. Nối các dòng lại với nhau bằng một ký tự `\n`.
+ * @param {string} sql - Chuỗi SQL nhiều dòng được viết bằng Template String
+ * @returns {string} Chuỗi SQL đã được chuẩn hóa:
+ *   - Bỏ qua các dòng trống ở đầu và cuối.
+ *   - Xóa khoảng trắng thừa (trim) ở mỗi dòng.
+ *   - Bỏ qua các dòng rỗng ở giữa.
+ *   - Nối các dòng lại với nhau thành 1 dòng duy nhất, ngăn cách bởi 1 dấu cách " ".
  */
-function multilineFormat(strings, ...values) {
-  // TODO: Viết code tại đây
-  throw new Error("Chưa cài đặt hàm multilineFormat");
+function cleanQueryString(sql) {
+  // TODO: Cài đặt hàm tại đây
+  throw new Error("Chưa cài đặt hàm cleanQueryString");
 }
 
 // ==============================================================================
-// BÀI 3: BỘ MÔ PHỎNG SCOPE CHAIN, HOISTING, TDZ & CONST IMMUTABILITY
+// BÀI 3: MODULE CẤU HÌNH BACKEND AN TOÀN (IMMUTABLE CONFIG)
 // ==============================================================================
 
 /**
- * Khởi tạo một Scope Registry mô phỏng chính xác cơ chế Scope Chain, Hoisting,
- * Temporal Dead Zone (TDZ) và quy tắc khai báo biến let/const/var trong JavaScript ES6+.
+ * Tạo đối tượng quản lý cấu hình hệ thống an toàn, bảo vệ tính bất biến của Config.
  * 
- * @param {object|null} [parentScope=null] - Scope cha (nếu có) để tạo Scope Chain
- * @returns {object} Đối tượng scope chứa các phương thức:
- *   - declare(name, kind): Khai báo tên biến với từ khóa 'var', 'let' hoặc 'const'.
- *       + Nếu kind không hợp lệ -> ném TypeError("Invalid declaration kind").
- *       + Nếu biến đã tồn tại trong scope hiện tại và khai báo lại bằng 'let' hoặc 'const'
- *         (hoặc biến cũ là 'let'/'const') -> ném TypeError("Identifier '<name>' has already been declared").
- *       + Nếu kind là 'var': biến được hoisted với giá trị ban đầu là `undefined`.
- *       + Nếu kind là 'let' hoặc 'const': biến nằm trong vùng TDZ (UNINITIALIZED).
- * 
- *   - initialize(name, value): Khởi tạo giá trị đầu tiên cho biến (đưa biến ra khỏi TDZ).
- *       + Nếu biến chưa từng declare trong scope hiện tại -> ném ReferenceError("'<name>' is not declared").
- *       + Nếu biến đã qua bước initialize rồi mà gọi lại -> ném Error("Variable already initialized").
- *       + Nếu biến là 'const': gán giá trị, và nếu value là object/array thì áp dụng `Object.freeze(value)`.
- * 
- *   - assign(name, value): Gán lại giá trị cho biến đã khởi tạo theo Scope Chain.
- *       + Tìm kiếm biến từ scope hiện tại lên parentScope.
- *       + Nếu không tìm thấy ở bất kỳ scope nào -> ném ReferenceError("'<name>' is not defined").
- *       + Nếu tìm thấy nhưng biến đang trong TDZ -> ném ReferenceError("Cannot access '<name>' before initialization").
- *       + Nếu biến có kind là 'const' -> ném TypeError("Assignment to constant variable").
- *       + Cập nhật giá trị mới cho biến (trên đúng scope mà biến được tìm thấy).
- * 
- *   - get(name): Đọc giá trị biến theo Scope Chain.
- *       + Tìm kiếm biến từ scope hiện tại lên parentScope.
- *       + Nếu không tìm thấy -> ném ReferenceError("'<name>' is not defined").
- *       + Nếu tìm thấy nhưng biến đang trong TDZ -> ném ReferenceError("Cannot access '<name>' before initialization").
- *       + Trả về giá trị của biến.
- * 
- *   - createChildScope(): Tạo một scope con mới có parentScope chính là scope hiện tại,
- *       cho phép Variable Shadowing (khai báo biến trùng tên mà không đụng chạm đến scope cha).
+ * @param {object} [initialConfig={}] - Cấu hình khởi tạo ban đầu
+ * @returns {object} Đối tượng quản lý cấu hình:
+ *   - get(key, defaultValue = null): Lấy giá trị của key; nếu không tồn tại hoặc undefined, trả về defaultValue.
+ *   - set(key, value): Gán hoặc cập nhật giá trị của key.
+ *   - has(key): Kiểm tra key có tồn tại trong cấu hình không (trả về true/false).
+ *   - exportConfig(): Xuất bản sao cấu hình đã được đóng băng bằng Object.freeze() để không thể bị sửa đổi từ bên ngoài.
  */
-function createScopeRegistry(parentScope = null) {
-  // TODO: Viết code tại đây
-  throw new Error("Chưa cài đặt hàm createScopeRegistry");
+function createConfigManager(initialConfig = {}) {
+  // TODO: Cài đặt hàm tại đây
+  throw new Error("Chưa cài đặt hàm createConfigManager");
 }
 
 module.exports = {
-  createExecutionContext,
+  createCounter,
   createBatchHandlers,
-  highlight,
-  multilineFormat,
-  createScopeRegistry,
+  formatLogMessage,
+  cleanQueryString,
+  createConfigManager,
 };
